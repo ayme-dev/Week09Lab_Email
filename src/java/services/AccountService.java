@@ -9,6 +9,8 @@ import dataaccess.UserDB;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.mail.MessagingException;
+import javax.naming.NamingException;
 import models.User;
 import sun.util.logging.PlatformLogger;
 
@@ -48,5 +50,28 @@ public class AccountService {
         }
 
         return null;
+    }
+    
+    public boolean forgotPassword (String email) {
+        UserService us = new UserService();
+        User user = us.getByEmail(email);
+        String firstname = user.getFirstname();
+        String lastname = user.getLastname();
+        String username = user.getUsername();
+        String password = user.getPassword();
+        
+        String template = "Hi" + firstname + " " + lastname + ",\n" + 
+                "Here are your credentials to log back into Notes Keepr.\n" +
+                "Username: " + username + "\n" +
+                "password: " + password + "\n";
+        
+        try {
+            GmailService.sendMail(email, "Forgot Password", template, false);
+            return true;
+        } catch (MessagingException | NamingException ex) {
+            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return false;
     }
 }
